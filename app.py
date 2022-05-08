@@ -5,15 +5,18 @@ from pycaret.classification import load_model, predict_model
 
 
 def predict_quality(model, df):
-
     predictions_data = predict_model(estimator=model, data=df)
-    return predictions_data['Label'][0]
+
+    if predictions_data['Label'][0] == 0:
+        return 'False', predictions_data['Score'][0]
+
+    return 'True', predictions_data['Score'][0]
 
 
 model = load_model('lr_v1')
 
 
-st.title("Teste de Streamlit com Machine Learning")
+st.title("Diabetes prediction")
 
 st.sidebar.title("Dados de entrada")
 pregnant = st.sidebar.number_input(
@@ -32,8 +35,8 @@ pedigree = st.sidebar.number_input("Diabetes pedigree function",
                                    value=0.000, step=0.001, format="%0.3f", min_value=0.000)
 age = st.sidebar.number_input("Age (years)", value=0, step=1, min_value=0)
 
-
-#predict = st.sidebar.button("Predict")
+_, c2, _ = st.sidebar.columns(3)
+predict = c2.button("Predict")
 
 
 features = {'Number of times pregnant': pregnant,
@@ -49,7 +52,7 @@ features = {'Number of times pregnant': pregnant,
 features_df = pd.DataFrame([features])
 st.table(features_df)
 
-
-if st.sidebar.button('Predict'):
-    prediction = predict_quality(model, features_df)
-    st.write(' Based on feature values, your wine quality is ' + str(prediction))
+if predict:
+    prediction, score = predict_quality(model, features_df)
+    st.write(f'Diabetes prediction: {prediction}')
+    st.write(f'Prediction score: {score}')
